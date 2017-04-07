@@ -142,7 +142,7 @@
      <rect>
       <x>10</x>
       <y>190</y>
-      <width>71</width>
+      <width>101</width>
       <height>21</height>
      </rect>
     </property>
@@ -252,7 +252,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>220</y>
+      <y>280</y>
       <width>71</width>
       <height>21</height>
      </rect>
@@ -265,7 +265,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>220</y>
+      <y>280</y>
       <width>61</width>
       <height>23</height>
      </rect>
@@ -281,13 +281,39 @@
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>225</y>
+      <y>280</y>
       <width>21</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
      <string>ms</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="mulCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>250</y>
+      <width>101</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Multicast</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="IPcheckBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>220</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>IP and port</string>
     </property>
    </widget>
   </widget>

@@ -53,12 +53,35 @@ void MainWindow::on_pushButton_1_clicked()
         QMessageBox::information(this,nullptr, "Port is not correct!");
         return;
     }
-
-    if(!recver->bind(localPort))
+    if(!ui->mulCheckBox->isChecked())
     {
-        QMessageBox::information(this,nullptr, "Port is binded!");
-        return;
+        if(!recver->bind(localPort))
+        {
+            QMessageBox::information(this,nullptr, "Port is binded!");
+            return;
+        }
     }
+    else
+    {
+        QString addrStr = ui->addrEdit_1->text()
+               + "." + ui->addrEdit_2->text()
+               + "." + ui->addrEdit_3->text()
+               + "." + ui->addrEdit_4->text();
+        addr->setAddress(addrStr);
+        if(!recver->bind(QHostAddress::AnyIPv4, localPort))
+        {
+            QMessageBox::information(this,nullptr, "Port is binded!");
+            return;
+        }
+        if(!recver->joinMulticastGroup(*addr))
+        {
+            QMessageBox::information(this,nullptr, "Join multicast group error!");
+            recver->close();
+            return;
+        }
+    }
+    ui->mulCheckBox->setDisabled(true);
+    ui->portEdit_1->setDisabled(true);
     ui->pushButton_1->setDisabled(true);
     ui->pushButton_2->setDisabled(false);
 }
@@ -66,6 +89,8 @@ void MainWindow::on_pushButton_1_clicked()
 void MainWindow::on_pushButton_2_clicked()
 {
     recver->close();
+    ui->mulCheckBox->setDisabled(false);
+    ui->portEdit_1->setDisabled(false);
     ui->pushButton_2->setDisabled(true);
     ui->pushButton_1->setDisabled(false);
 }
@@ -77,7 +102,8 @@ void MainWindow::on_pushButton_3_clicked()
 
 void MainWindow::on_pushButton_4_clicked()
 {
-    if(!ui->repeatCheckBox->isChecked())
+    mSec = ui->repeatEdit->text().toInt();
+    if(!ui->repeatCheckBox->isChecked() || mSec == 0)
     {
         QString addrStr = ui->addrEdit_1->text()
                + "." + ui->addrEdit_2->text()
@@ -89,20 +115,16 @@ void MainWindow::on_pushButton_4_clicked()
         QString qStr = ui->textEdit->toPlainText();
         QByteArray datagram = qStr.toLatin1();
         sender->writeDatagram(datagram.data(), datagram.size(),*addr, destPort);
-    }
-    else
-    {
-        mSec = ui->repeatEdit->text().toInt();
-        if(mSec > 0)
-        {
-            ui->repeatEdit->setDisabled(true);
-            ui->pushButton_4->setDisabled(true);
-            timer->start(mSec);
-        }
-        else
+        if(mSec == 0)
         {
             ui->repeatCheckBox->setChecked(false);
         }
+    }
+    else
+    {
+        ui->repeatEdit->setDisabled(true);
+        ui->pushButton_4->setDisabled(true);
+        timer->start(mSec);
     }
 }
 
@@ -121,16 +143,23 @@ void MainWindow::recieveDatagram()
     while(recver->hasPendingDatagrams())
     {
         QByteArray datagram;
+        QString qStr;
+        QHostAddress srcAddr = QHostAddress("0.0.0.0");
+        quint16 srcPort = 0;
         datagram.resize(recver->pendingDatagramSize());
-        recver->readDatagram(datagram.data(), datagram.size());
+        recver->readDatagram(datagram.data(), datagram.size(), &srcAddr, &srcPort);
+        srcAddr.setAddress(srcAddr.toIPv4Address());
+        if(ui->IPcheckBox->isChecked())
+        {
+            qStr += "[" + srcAddr.toString() + ":" + QString::number((int)srcPort) + "]\t";
+        }
         if(!ui->hexCheckBox->isChecked())
         {
-            QString qStr = datagram;
+            qStr += datagram;
             ui->textBrowser->append(qStr);
         }
         else
         {
-            QString qStr;
             for(int i = 0; i < datagram.size(); i++)
             {
                 char aznable = datagram[i];
